@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>تتبّع الحرف بإصبعك · إبداع قلمي</title>
+<link rel="preload" href="NotoNaskhArabic-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Noto Naskh Arabic";src:url("NotoNaskhArabic-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Noto Naskh Arabic";src:url("NotoNaskhArabic-Bold.woff2") format("woff2");font-weight:600 700;font-display:swap}
+
+/* Layout: a single notebook sheet; games sit on ruled paper, one game at a time, tabs as page markers along the top. */
+:root{
+  --paper:#f3f5f8; --sheet:#ffffff; --rule:#d5dde8; --ink:#1d2b53; --ink-soft:#4a5878;
+  --gold:#b07a12; --gold-soft:#f6ecd6; --ok:#2f7a4f; --ok-soft:#e3f2e8; --bad:#a2402f; --bad-soft:#f7e4df;
+  --display:"Noto Naskh Arabic","Amiri","Traditional Arabic",serif;
+  --body:"Noto Naskh Arabic","Amiri","Traditional Arabic",serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11172a; --sheet:#182038; --rule:#2c3758; --ink:#e7ecf7; --ink-soft:#a9b4cf;
+  --gold:#e0b153; --gold-soft:#3a3120; --ok:#7fd3a0; --ok-soft:#1d3a2a; --bad:#f0a091; --bad-soft:#40241f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11172a; --sheet:#182038; --rule:#2c3758; --ink:#e7ecf7; --ink-soft:#a9b4cf;
+  --gold:#e0b153; --gold-soft:#3a3120; --ok:#7fd3a0; --ok-soft:#1d3a2a; --bad:#f0a091; --bad-soft:#40241f; color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.8}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-family:var(--display);font-size:2.3rem;margin:0;line-height:1.3;text-wrap:balance}
+h1 span{color:var(--gold)}
+.tag{color:var(--ink-soft);margin:0;font-size:1rem}
+.score{font-variant-numeric:tabular-nums;background:var(--gold-soft);color:var(--ink);border-radius:999px;padding:4px 14px;font-weight:600}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:-1px}
+nav button{font:inherit;font-size:1rem;border:1px solid var(--rule);border-bottom:none;background:transparent;color:var(--ink-soft);padding:6px 14px;border-radius:10px 10px 0 0;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--sheet);color:var(--ink);font-weight:700}
+nav button:focus-visible,.opt:focus-visible,.tile:focus-visible,.act:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:0 0 14px 14px;padding:20px clamp(14px,4vw,32px) 26px;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 47px,var(--rule) 47px 48px);background-position:0 18px}
+.sheet h2{font-family:var(--display);font-size:1.6rem;margin:0 0 2px}
+.how{color:var(--ink-soft);margin:0 0 14px}
+.progress{display:flex;gap:4px;margin-bottom:14px}
+.progress i{flex:1;height:6px;border-radius:3px;background:var(--rule)}
+.progress i.ok{background:var(--ok)} .progress i.bad{background:var(--bad)} .progress i.now{background:var(--gold)}
+.word{font-family:var(--display);font-size:clamp(3.4rem,13vw,5.5rem);text-align:center;line-height:1.7;margin:4px 0 6px}
+.word .hl{color:var(--gold)}
+.prompt{text-align:center;font-size:1.15rem;margin:0 0 12px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.opt{font:inherit;font-size:1.15rem;padding:10px 12px;border-radius:12px;border:2px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;min-height:56px}
+.opt.big{font-family:var(--display);font-size:2.4rem;line-height:1.4}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)} .opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.feedback{min-height:3.4em;margin-top:14px;padding:10px 14px;border-radius:10px;font-size:1.05rem}
+.feedback.ok{background:var(--ok-soft);color:var(--ok)} .feedback.bad{background:var(--bad-soft);color:var(--bad)}
+.feedback:empty{background:transparent}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.act{font:inherit;font-size:1.05rem;padding:8px 22px;border-radius:999px;border:none;background:var(--ink);color:var(--sheet);cursor:pointer}
+.act.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+.built{font-family:var(--display);font-size:clamp(3rem,12vw,4.6rem);text-align:center;min-height:1.7em;line-height:1.7;border-bottom:2px solid var(--ink-soft);margin:0 auto 10px;max-width:420px}
+.tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tile{font-family:var(--display);font-size:2.2rem;width:64px;height:72px;border-radius:12px;border:2px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;line-height:1}
+.tile:disabled{opacity:.25;cursor:default}
+.end{text-align:center;padding:18px 0}
+.end .stars{font-size:2.4rem;color:var(--gold);letter-spacing:6px}
+.end p{margin:6px 0}
+.trace-wrap{position:relative;border:2px solid var(--rule);border-radius:12px;background:var(--sheet);overflow:hidden}
+.trace-wrap canvas{display:block;width:100%;height:240px;touch-action:none;cursor:crosshair}
+.trace-meta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:.95rem;color:var(--ink-soft);margin-top:8px;font-variant-numeric:tabular-nums}
+.rule{background:var(--gold-soft);border-radius:10px;padding:8px 14px;margin:0 0 14px;font-size:.98rem}
+footer{color:var(--ink-soft);font-size:.9rem;margin-top:14px;text-align:center}
+@media (prefers-reduced-motion:no-preference){.opt,.tile{transition:border-color .15s,background .15s}}
+html,body{margin:0}
+*{box-sizing:border-box}
+.back{display:inline-block;margin-top:4px;color:var(--ink-soft);text-decoration:none;font-size:.95rem;border-bottom:1px solid var(--rule)}
+.back:hover{color:var(--ink)}
+.sheet{border-radius:14px}
+footer b{font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ألعاب <span>إبداع قلمي</span></h1>
+      <p class="tag">تدريبات خط النسخ لطلاب الصف السادس الابتدائي</p>
+      <a class="back" href="index.html">جميع الألعاب</a>
+    </div>
+    <div class="score" id="totalScore" aria-live="polite"></div>
+  </header>
+  <main class="sheet" id="stage" aria-live="polite"></main>
+  <footer>مبادرة «إبداع قلمي» · الطفولة المبكرة بالابتدائية الثالثة بخليص · إعداد المعلمة: ساعدة السلمي</footer>
+</div>
+<script>
+(function(){
+const AR = n => String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const pick = (a,n) => shuffle(a).slice(0,n);
+const esc = s => s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let ROUNDS = 8;
+let stars = {}; try{ stars = JSON.parse(localStorage.getItem('iq-stars')||'{}')||{}; }catch(e){ stars={}; }
+function saveStars(){ try{ localStorage.setItem('iq-stars',JSON.stringify(stars)); }catch(e){} renderTotal(); }
+function renderTotal(){ const t=stars['trace']||0; document.getElementById('totalScore').textContent='أفضل نتيجة: '+AR(t)+' من ٣ نجوم'; }
+
+const NONJOIN = 'اأإآدذرزوؤةء';
+/* ---------- Game 5: tracing ---------- */
+const TRACE_LETTERS = [
+ {t:'ب', tip:'الباء تستقر على السطر، وتمتد أفقيًا.'},{t:'ن', tip:'النون المنفردة تنزل عن السطر بقوس مستدير.'},
+ {t:'ع', tip:'العين المنفردة تنزل عن السطر.'},{t:'م', tip:'الميم المنفردة: رأس مفتوح غير مطموس وذيل نازل.'},
+ {t:'ص', tip:'الصاد المنفردة تنزل عن السطر.'},{t:'ك', tip:'الكاف تستقر على السطر.'},
+ {t:'ج', tip:'الجيم المنفردة تنزل عن السطر.'},{t:'ر', tip:'الراء تنزل عن السطر قليلًا.'},
+ {t:'ه', tip:'الهاء المنفردة تستقر على السطر، وتنزل إذا اتصلت من الجهتين.'},{t:'ق', tip:'القاف المنفردة تنزل عن السطر.'}
+];
+const TRACE_WORDS = [
+ {t:'قلم', tip:'لاحظ نزول ذيل الميم في آخر الكلمة دون طمس رأسها.'},{t:'حبر', tip:'الحاء والباء تستقران، والراء تنزل قليلًا.'},
+ {t:'نجم', tip:'الجيم في الوسط تستقر على السطر، والميم في الآخر تنزل.'},{t:'سطر', tip:'الطاء تستقر على السطر، والراء تنزل قليلًا.'},
+ {t:'علم', tip:'اتصلت الحروف الثلاثة، ونزلت الميم في الآخر.'}
+];
+const NASKH = '"Noto Naskh Arabic","Amiri",serif';
+let fontReady = null;
+function ensureFont(){
+  if(!fontReady){
+    fontReady = (document.fonts && document.fonts.load)
+      ? Promise.race([document.fonts.load('100px "Noto Naskh Arabic"','بجعم'), new Promise(r=>setTimeout(r,2500))]).catch(()=>{})
+      : Promise.resolve();
+  }
+  return fontReady;
+}
+function renderTrace(it){
+  stage.innerHTML=head()+`<p class="prompt">تتبّع ${it.t.length>1?'كلمة':'حرف'} <strong style="font-family:${NASKH.replace(/"/g,"'")};font-size:1.4em">${it.t}</strong></p>
+   <div class="trace-wrap"><canvas id="pad" aria-label="لوحة التتبّع"></canvas></div>
+   <div class="trace-meta" id="meta">اكتب فوق الشكل الباهت، ثم اضغط «تحقّق».</div>
+   <div class="feedback"></div>
+   <div class="row"><button class="act ghost" id="clr">امسح</button><button class="act" id="chk">تحقّق</button></div>`;
+  const cv=document.getElementById('pad'), ctx=cv.getContext('2d');
+  let W,H,dpr,base,size,mask=null,ink=null,inkCtx,locked=false,drawing=false,last=null,LW;
+  const css=getComputedStyle(document.documentElement);
+  const col=n=>css.getPropertyValue(n).trim()||'#888';
+  function layout(){
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=Math.round(cv.clientWidth*dpr)||600; H=Math.round(cv.clientHeight*dpr)||240;
+    cv.width=W; cv.height=H;
+    size=Math.round(H*(it.t.length>1?0.5:0.58)); base=Math.round(H*0.6); LW=Math.max(10,Math.round(size*0.13));
+    ink=document.createElement('canvas'); ink.width=W; ink.height=H; inkCtx=ink.getContext('2d');
+    inkCtx.lineCap='round'; inkCtx.lineJoin='round'; inkCtx.lineWidth=LW; inkCtx.strokeStyle='#000';
+    // glyph mask
+    const m=document.createElement('canvas'); m.width=W; m.height=H; const mc=m.getContext('2d');
+    glyph(mc,'#000'); mask=mc.getImageData(0,0,W,H).data;
+    const d=document.createElement('canvas'); d.width=W; d.height=H; const dc=d.getContext('2d');
+    glyph(dc,'#000'); dc.lineWidth=LW*1.6; dc.lineJoin='round'; dc.strokeStyle='#000';
+    dc.font=`${size}px ${NASKH}`; dc.direction='rtl'; dc.textAlign='center'; dc.textBaseline='alphabetic'; dc.strokeText(it.t,W/2,base);
+    mask.dil=dc.getImageData(0,0,W,H).data;
+    paint();
+  }
+  function glyph(c,fill){ c.font=`${size}px ${NASKH}`; c.direction='rtl'; c.textAlign='center'; c.textBaseline='alphabetic'; c.fillStyle=fill; c.fillText(it.t,W/2,base); }
+  function paint(){
+    ctx.clearRect(0,0,W,H);
+    const ln=(y,c,w,dash)=>{ctx.beginPath();ctx.setLineDash(dash||[]);ctx.strokeStyle=c;ctx.lineWidth=w;ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();};
+    ln(base,col('--ink-soft'),2*dpr);
+    ln(base-size*0.42,col('--rule'),1*dpr,[6*dpr,6*dpr]);
+    ln(base+size*0.42,col('--rule'),1*dpr);
+    ctx.setLineDash([]);
+    ctx.globalAlpha=0.22; glyph(ctx,col('--ink')); ctx.globalAlpha=1;
+    // user ink tinted
+    const t=document.createElement('canvas'); t.width=W; t.height=H; const tc=t.getContext('2d');
+    tc.drawImage(ink,0,0); tc.globalCompositeOperation='source-in'; tc.fillStyle=col('--gold'); tc.fillRect(0,0,W,H);
+    ctx.drawImage(t,0,0);
+  }
+  const pos=e=>{const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*dpr,y:(e.clientY-r.top)*dpr};};
+  cv.addEventListener('pointerdown',e=>{ if(locked) return; drawing=true; last=pos(e); try{cv.setPointerCapture(e.pointerId);}catch(_){} inkCtx.beginPath(); inkCtx.arc(last.x,last.y,LW/2,0,Math.PI*2); inkCtx.fill(); paint(); e.preventDefault(); });
+  cv.addEventListener('pointermove',e=>{ if(!drawing||locked) return; const p=pos(e); inkCtx.beginPath(); inkCtx.moveTo(last.x,last.y); inkCtx.lineTo(p.x,p.y); inkCtx.stroke(); last=p; paint(); e.preventDefault(); });
+  const end=()=>{drawing=false;}; cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end); cv.addEventListener('pointerleave',end);
+  document.getElementById('clr').onclick=()=>{ if(locked) return; inkCtx.clearRect(0,0,W,H); paint(); document.getElementById('meta').textContent='اكتب فوق الشكل الباهت، ثم اضغط «تحقّق».'; };
+  document.getElementById('chk').onclick=()=>{
+    if(locked) return;
+    const u=inkCtx.getImageData(0,0,W,H).data;
+    let g=0,gc=0,uc=0,ui=0;
+    for(let i=3;i<u.length;i+=16){ const isG=mask[i]>100, isU=u[i]>100;
+      if(isG){g++; if(isU) gc++;} if(isU){uc++; if(mask.dil[i]>100) ui++;} }
+    if(uc===0){ document.getElementById('meta').textContent='لم تكتب شيئًا بعد. ضع إصبعك على بداية الحرف من اليمين واكتب فوقه.'; return; }
+    const cover=g?gc/g:0, prec=ui/uc, cp=Math.round(cover*100), pp=Math.round(prec*100);
+    document.getElementById('meta').textContent=`تغطية الحرف: ${AR(cp)}٪ · الكتابة داخل الحدود: ${AR(pp)}٪`;
+    const ok=cover>=0.6 && prec>=0.7;
+    locked=true; document.getElementById('clr').disabled=true;
+    let msg = ok ? it.tip : (cover<0.6 ? 'غطِّ أجزاء الحرف كلها، ولا تنسَ الجزء النازل عن السطر. ' : 'حاول أن تبقى قلمك داخل حدود الحرف الباهت. ')+it.tip;
+    answer(ok,msg);
+  };
+  ensureFont().then(layout);
+  window.__iqTrace = { points:(n)=>{ const pts=[]; if(!mask) return pts; for(let y=0;y<H;y+=4) for(let x=0;x<W;x+=4){ if(mask[(y*W+x)*4+3]>100) pts.push([x/dpr,y/dpr]); } return pts; } };
+}
+
+/* ---------- engine ---------- */
+const stage=document.getElementById('stage');
+let state=null;
+const GAMES={
+ trace:{title:'تتبّع الحرف بإصبعك', how:'اكتب فوق الحرف الباهت بإصبعك أو بالفأرة، وابدأ من اليمين. لاحظ الخط الداكن: هو السطر الذي تستقر عليه الحروف.',
+   make:()=>shuffle([...pick(TRACE_LETTERS,4),...pick(TRACE_WORDS,2)]), render:renderTrace, rounds:6}
+};
+function start(g){
+  ROUNDS = GAMES[g].rounds || 8;
+  state={g,items:GAMES[g].make(),i:0,res:[]};
+  draw();
+}
+function head(){
+  const G=GAMES[state.g];
+  const bars=Array.from({length:ROUNDS},(_,k)=>`<i class="${state.res[k]===true?'ok':state.res[k]===false?'bad':k===state.i?'now':''}"></i>`).join('');
+  return `<h2>${G.title}</h2><p class="how">${G.how}</p><div class="progress" aria-label="الجولة ${AR(state.i+1)} من ${AR(ROUNDS)}">${bars}</div>`;
+}
+function draw(){ if(state.i>=ROUNDS) return finish(); GAMES[state.g].render(state.items[state.i]); }
+function answer(ok,msg){
+  state.res[state.i]=ok;
+  const fb=stage.querySelector('.feedback');
+  fb.className='feedback '+(ok?'ok':'bad');
+  fb.textContent=(ok?'أحسنت! ':'محاولة جيدة. ')+msg;
+  stage.querySelectorAll('.opt,.tile').forEach(b=>b.disabled=true);
+  const row=stage.querySelector('.row'); row.innerHTML='<button class="act" id="nextBtn">'+(state.i+1<ROUNDS?'التالي':'النتيجة')+'</button>';
+  const nb=document.getElementById('nextBtn'); nb.onclick=()=>{state.i++;draw();}; nb.focus();
+}
+function finish(){
+  const correct=state.res.filter(Boolean).length;
+  const s= correct>=7?3: correct>=5?2: correct>=3?1:0;
+  stars[state.g]=Math.max(stars[state.g]||0,s); saveStars();
+  const msg = s===3?'إتقان رائع! أنت جاهز لتحدٍّ أصعب في دفترك.': s===2?'تقدّم جميل، وجولة أخرى ترفعك إلى ثلاث نجوم.': 'كل محاولة تقرّبك من الإتقان. أعد اللعب وراجع القاعدة.';
+  stage.innerHTML=head()+`<div class="end"><div class="stars" aria-label="${AR(s)} من ٣ نجوم">${'★'.repeat(s)}${'☆'.repeat(3-s)}</div>
+    <p>الإجابات الصحيحة: <strong>${AR(correct)}</strong> من ${AR(ROUNDS)}</p><p>${msg}</p></div>
+    <div class="row"><button class="act" id="again">العب مرة أخرى</button></div>`;
+  document.getElementById('again').onclick=()=>start(state.g);
+}
+
+renderTotal();
+start('trace');
+})();
+</script>
+</body>
+</html>

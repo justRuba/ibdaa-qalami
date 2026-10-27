@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ألعاب إبداع قلمي</title>
+<link rel="preload" href="NotoNaskhArabic-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Noto Naskh Arabic";src:url("NotoNaskhArabic-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Noto Naskh Arabic";src:url("NotoNaskhArabic-Bold.woff2") format("woff2");font-weight:600 700;font-display:swap}
+
+/* Layout: a single notebook sheet; games sit on ruled paper, one game at a time, tabs as page markers along the top. */
+:root{
+  --paper:#f3f5f8; --sheet:#ffffff; --rule:#d5dde8; --ink:#1d2b53; --ink-soft:#4a5878;
+  --gold:#b07a12; --gold-soft:#f6ecd6; --ok:#2f7a4f; --ok-soft:#e3f2e8; --bad:#a2402f; --bad-soft:#f7e4df;
+  --display:"Noto Naskh Arabic","Amiri","Traditional Arabic",serif;
+  --body:"Noto Naskh Arabic","Amiri","Traditional Arabic",serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11172a; --sheet:#182038; --rule:#2c3758; --ink:#e7ecf7; --ink-soft:#a9b4cf;
+  --gold:#e0b153; --gold-soft:#3a3120; --ok:#7fd3a0; --ok-soft:#1d3a2a; --bad:#f0a091; --bad-soft:#40241f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11172a; --sheet:#182038; --rule:#2c3758; --ink:#e7ecf7; --ink-soft:#a9b4cf;
+  --gold:#e0b153; --gold-soft:#3a3120; --ok:#7fd3a0; --ok-soft:#1d3a2a; --bad:#f0a091; --bad-soft:#40241f; color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.8}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-family:var(--display);font-size:2.3rem;margin:0;line-height:1.3;text-wrap:balance}
+h1 span{color:var(--gold)}
+.tag{color:var(--ink-soft);margin:0;font-size:1rem}
+.score{font-variant-numeric:tabular-nums;background:var(--gold-soft);color:var(--ink);border-radius:999px;padding:4px 14px;font-weight:600}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:-1px}
+nav button{font:inherit;font-size:1rem;border:1px solid var(--rule);border-bottom:none;background:transparent;color:var(--ink-soft);padding:6px 14px;border-radius:10px 10px 0 0;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--sheet);color:var(--ink);font-weight:700}
+nav button:focus-visible,.opt:focus-visible,.tile:focus-visible,.act:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:0 0 14px 14px;padding:20px clamp(14px,4vw,32px) 26px;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 47px,var(--rule) 47px 48px);background-position:0 18px}
+.sheet h2{font-family:var(--display);font-size:1.6rem;margin:0 0 2px}
+.how{color:var(--ink-soft);margin:0 0 14px}
+.progress{display:flex;gap:4px;margin-bottom:14px}
+.progress i{flex:1;height:6px;border-radius:3px;background:var(--rule)}
+.progress i.ok{background:var(--ok)} .progress i.bad{background:var(--bad)} .progress i.now{background:var(--gold)}
+.word{font-family:var(--display);font-size:clamp(3.4rem,13vw,5.5rem);text-align:center;line-height:1.7;margin:4px 0 6px}
+.word .hl{color:var(--gold)}
+.prompt{text-align:center;font-size:1.15rem;margin:0 0 12px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.opt{font:inherit;font-size:1.15rem;padding:10px 12px;border-radius:12px;border:2px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;min-height:56px}
+.opt.big{font-family:var(--display);font-size:2.4rem;line-height:1.4}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)} .opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.feedback{min-height:3.4em;margin-top:14px;padding:10px 14px;border-radius:10px;font-size:1.05rem}
+.feedback.ok{background:var(--ok-soft);color:var(--ok)} .feedback.bad{background:var(--bad-soft);color:var(--bad)}
+.feedback:empty{background:transparent}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.act{font:inherit;font-size:1.05rem;padding:8px 22px;border-radius:999px;border:none;background:var(--ink);color:var(--sheet);cursor:pointer}
+.act.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+.built{font-family:var(--display);font-size:clamp(3rem,12vw,4.6rem);text-align:center;min-height:1.7em;line-height:1.7;border-bottom:2px solid var(--ink-soft);margin:0 auto 10px;max-width:420px}
+.tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tile{font-family:var(--display);font-size:2.2rem;width:64px;height:72px;border-radius:12px;border:2px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;line-height:1}
+.tile:disabled{opacity:.25;cursor:default}
+.end{text-align:center;padding:18px 0}
+.end .stars{font-size:2.4rem;color:var(--gold);letter-spacing:6px}
+.end p{margin:6px 0}
+.trace-wrap{position:relative;border:2px solid var(--rule);border-radius:12px;background:var(--sheet);overflow:hidden}
+.trace-wrap canvas{display:block;width:100%;height:240px;touch-action:none;cursor:crosshair}
+.trace-meta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:.95rem;color:var(--ink-soft);margin-top:8px;font-variant-numeric:tabular-nums}
+.rule{background:var(--gold-soft);border-radius:10px;padding:8px 14px;margin:0 0 14px;font-size:.98rem}
+footer{color:var(--ink-soft);font-size:.9rem;margin-top:14px;text-align:center}
+@media (prefers-reduced-motion:no-preference){.opt,.tile{transition:border-color .15s,background .15s}}
+html,body{margin:0}
+*{box-sizing:border-box}
+.back{display:inline-block;margin-top:4px;color:var(--ink-soft);text-decoration:none;font-size:.95rem;border-bottom:1px solid var(--rule)}
+.back:hover{color:var(--ink)}
+.sheet{border-radius:14px}
+footer b{font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:6px}
+.card{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:start;text-decoration:none;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:16px 18px}
+.card:hover,.card:focus-visible{border-color:var(--gold);outline:none}
+.card .n{grid-row:span 2;width:40px;height:40px;border-radius:50%;background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem}
+.card .t{font-size:1.25rem;font-weight:700}
+.card .d{color:var(--ink-soft);font-size:.98rem;line-height:1.7}
+.intro{color:var(--ink-soft);margin:0 0 12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div><h1>ألعاب <span>إبداع قلمي</span></h1><p class="tag">أُتقِن حرفي، فيُشرق أثري · تدريبات خط النسخ لطلاب الصف السادس الابتدائي</p></div></header>
+  <p class="intro">اختر لعبة وابدأ. كل لعبة جولات قصيرة تتغير أسئلتها في كل مرة، مع تغذية راجعة بعد كل إجابة.</p>
+  <nav class="cards" aria-label="الألعاب">
+    <a class="card" href="line.html"><span class="n">١</span><span class="t">أين يستقر الحرف؟</span><span class="d">يحدد الطالب هل يستقر الحرف الملوّن على السطر أم ينزل عنه.</span></a>
+    <a class="card" href="forms.html"><span class="n">٢</span><span class="t">شكل الحرف في موضعه</span><span class="d">يختار شكل الحرف الصحيح في أول الكلمة ووسطها وآخرها ومنفردًا.</span></a>
+    <a class="card" href="order.html"><span class="n">٣</span><span class="t">رتّب حروف الكلمة</span><span class="d">يرتّب حروفًا منفصلة ليكوّن كلمة، ويشاهد اتصالها بخط النسخ.</span></a>
+    <a class="card" href="joins.html"><span class="n">٤</span><span class="t">صيّاد الانقطاع</span><span class="d">يكتشف الكلمة الموصولة وصلًا صحيحًا والحروف التي لا تتصل بما بعدها.</span></a>
+    <a class="card" href="trace.html"><span class="n">٥</span><span class="t">تتبّع الحرف بإصبعك</span><span class="d">يكتب بإصبعه فوق الحرف على السطر، وتقيس اللعبة دقة كتابته.</span></a>
+  </nav>
+  <footer>مبادرة «إبداع قلمي» · الطفولة المبكرة بالابتدائية الثالثة بخليص · إعداد المعلمة: ساعدة السلمي</footer>
+</div>
+
+</body>
+</html>
