@@ -140,7 +140,7 @@ function answer(ok,msg){
 }
 function finish(){
   const correct=state.res.filter(Boolean).length;
-  const s= correct>=7?3: correct>=5?2: correct>=3?1:0;
+  const ratio=correct/ROUNDS; const s= ratio>=0.85?3: ratio>=0.6?2: ratio>=0.35?1:0;
   stars[state.g]=Math.max(stars[state.g]||0,s); saveStars();
   const msg = s===3?'إتقان رائع! أنت جاهز لتحدٍّ أصعب في دفترك.': s===2?'تقدّم جميل، وجولة أخرى ترفعك إلى ثلاث نجوم.': 'كل محاولة تقرّبك من الإتقان. أعد اللعب وراجع القاعدة.';
   stage.innerHTML=head()+`<div class="end"><div class="stars" aria-label="${AR(s)} من ٣ نجوم">${'★'.repeat(s)}${'☆'.repeat(3-s)}</div>
